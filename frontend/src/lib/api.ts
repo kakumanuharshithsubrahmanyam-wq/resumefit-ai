@@ -179,6 +179,14 @@ export async function runAnalysis(
       ai_consent: payload.aiConsent,
       save_to_history: payload.saveToHistory,
       resume_filename: payload.resumeFilename ?? null,
+      resume_parse_context: payload.resumeParseContext
+        ? {
+            format: payload.resumeParseContext.format ?? null,
+            word_count: payload.resumeParseContext.word_count ?? null,
+            character_count: payload.resumeParseContext.character_count ?? null,
+            page_count: payload.resumeParseContext.page_count ?? null,
+          }
+        : null,
     }),
   })
   return readJsonResponse(response)

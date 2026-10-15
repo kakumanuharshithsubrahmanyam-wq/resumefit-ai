@@ -88,6 +88,44 @@ export type ScoringBreakdown = {
   disclaimer: string
 }
 
+export type ATSComponentScore = {
+  id: string
+  label: string
+  nominal_weight: number
+  effective_weight: number
+  score: number | null
+  available: boolean
+  explanation: string
+}
+
+export type ATSRecommendedFix = {
+  title: string
+  rationale: string
+  impact: 'high' | 'medium' | 'low'
+}
+
+export type ATSCompatibilityResult = {
+  status: 'available' | 'unavailable' | 'insufficient_data'
+  overall_score: number | null
+  label: string
+  disclaimer: string
+  methodology: string
+  components: ATSComponentScore[]
+  positive_signals: string[]
+  improvement_opportunities: string[]
+  missing_keywords: string[]
+  structural_warnings: string[]
+  parsing_warnings: string[]
+  recommended_fixes: ATSRecommendedFix[]
+}
+
+export type ResumeParseContext = {
+  format?: ResumeFormat | null
+  word_count?: number | null
+  character_count?: number | null
+  page_count?: number | null
+}
+
 export type ResumeProfile = {
   explicit_skills: string[]
   demonstrated_skills: string[]
@@ -105,6 +143,7 @@ export type AnalysisResult = {
     findings: RequirementFinding[]
     scoring: ScoringBreakdown
     resume_profile: ResumeProfile
+    ats_compatibility?: ATSCompatibilityResult | null
   }
   recommendations: {
     enabled: boolean
@@ -135,6 +174,7 @@ export type RunAnalysisPayload = JobDetails & {
   aiConsent: boolean
   saveToHistory: boolean
   resumeFilename?: string | null
+  resumeParseContext?: ResumeParseContext | null
 }
 
 export type AnalysisHistoryItem = {
@@ -145,6 +185,7 @@ export type AnalysisHistoryItem = {
   resume_filename?: string | null
   overall_alignment: number
   required_skill_coverage: number
+  ats_compatibility_score?: number | null
 }
 
 export type StoredAnalysisRecord = {

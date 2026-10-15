@@ -44,7 +44,7 @@ export function AnalyzePage() {
     !loading &&
     (!requestAi || aiConsent)
 
-  async function runFullAnalysis(resumeText: string, filename: string) {
+  async function runFullAnalysis(resumeText: string, filename: string, parseMeta?: ResumeParseData) {
     const analysisResponse = await runAnalysis({
       resumeText,
       jobTitle: jobDetails.jobTitle,
@@ -54,6 +54,14 @@ export function AnalyzePage() {
       aiConsent,
       saveToHistory,
       resumeFilename: filename,
+      resumeParseContext: parseMeta
+        ? {
+            format: parseMeta.format,
+            word_count: parseMeta.word_count,
+            character_count: parseMeta.character_count,
+            page_count: parseMeta.page_count ?? null,
+          }
+        : null,
     })
     setAnalysisResult(analysisResponse.data)
     if (saveToHistory) {
@@ -80,7 +88,7 @@ export function AnalyzePage() {
       })
       setParseResult(parseResponse.data)
       setLastResumeText(parseResponse.data.text)
-      await runFullAnalysis(parseResponse.data.text, parseResponse.data.filename)
+      await runFullAnalysis(parseResponse.data.text, parseResponse.data.filename, parseResponse.data)
     } catch (err) {
       const message =
         err instanceof ApiClientError
@@ -100,7 +108,7 @@ export function AnalyzePage() {
     setError(null)
     setLoading(true)
     try {
-      await runFullAnalysis(lastResumeText, parseResult.filename)
+      await runFullAnalysis(lastResumeText, parseResult.filename, parseResult)
     } catch (err) {
       setError(
         err instanceof ApiClientError

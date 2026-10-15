@@ -19,6 +19,7 @@ def run_analysis(
     analysis = run_deterministic_analysis(
         resume_text=request.resume_text.strip(),
         job_description=request.job_description.strip(),
+        parse_context=request.resume_parse_context,
     )
     recommendations = build_recommendations(
         settings=settings,

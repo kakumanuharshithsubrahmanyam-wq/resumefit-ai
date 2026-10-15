@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional
 import httpx
 from pydantic import BaseModel, Field, ValidationError
 
+from app.config import Settings
 from app.schemas.analysis import (
     AIRecommendations,
     DeterministicAnalysisResult,
@@ -31,7 +32,9 @@ class OpenAIRecommendationProvider:
         timeout_seconds: float,
         max_input_chars: int,
     ) -> None:
-        self.api_key = api_key
+        if not api_key.strip():
+            raise ValueError("OpenAI API key must not be empty.")
+        self._api_key = api_key.strip()
         self.model = model
         self.timeout_seconds = timeout_seconds
         self.max_input_chars = max_input_chars
@@ -81,7 +84,9 @@ class OpenAIRecommendationProvider:
                 ],
                 "learning_topics": ["string"],
                 "project_ideas": ["string"],
-                "resume_bullet_suggestions": ["string starting with 'Suggested bullet (only if accurate):'"],
+                "resume_bullet_suggestions": [
+                    "string starting with 'Suggested bullet (only if accurate):'"
+                ],
                 "learning_plan": [
                     {
                         "title": "string",
@@ -108,7 +113,7 @@ class OpenAIRecommendationProvider:
             response = client.post(
                 "https://api.openai.com/v1/chat/completions",
                 headers={
-                    "Authorization": f"Bearer {self.api_key}",
+                    "Authorization": f"Bearer {self._api_key}",
                     "Content-Type": "application/json",
                 },
                 json=payload,
@@ -132,12 +137,13 @@ class OpenAIRecommendationProvider:
         )
 
 
-class OpenAIProviderError(Exception):
-    pass
-
-
-def safe_openai_recommendations(provider: OpenAIRecommendationProvider, **kwargs) -> AIRecommendations:
-    try:
-        return provider.generate_recommendations(**kwargs)
-    except (httpx.HTTPError, KeyError, json.JSONDecodeError, ValidationError, OpenAIProviderError) as exc:
-        raise OpenAIProviderError(str(exc)) from exc
+def create_openai_provider(settings: Settings) -> Optional[OpenAIRecommendationProvider]:
+    """Return a provider instance only when OpenAI is fully configured."""
+    if not settings.openai_configured or not settings.openai_api_key:
+        return None
+    return OpenAIRecommendationProvider(
+        api_key=settings.openai_api_key,
+        model=settings.openai_model,
+        timeout_seconds=settings.ai_timeout_seconds,
+        max_input_chars=settings.ai_max_input_chars,
+    )

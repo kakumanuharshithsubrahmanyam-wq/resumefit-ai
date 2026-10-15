@@ -107,7 +107,10 @@ export function AnalysisHistoryPanel({ onOpen, refreshToken = 0 }: AnalysisHisto
                 <p className="text-sm font-medium">{item.job_title}</p>
                 <p className="text-xs text-muted-foreground">
                   {new Date(item.created_at).toLocaleString()} ·{' '}
-                  {item.overall_alignment.toFixed(1)}% alignment
+                  {item.overall_alignment.toFixed(1)}% job match
+                  {item.ats_compatibility_score != null
+                    ? ` · ${item.ats_compatibility_score.toFixed(1)}% ATS est.`
+                    : ''}
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">

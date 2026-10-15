@@ -55,12 +55,16 @@ def generate_analysis_pdf(record: StoredAnalysisRecord) -> bytes:
     story.append(Spacer(1, 0.15 * inch))
 
     scoring = data.analysis.scoring
+    ats = data.analysis.ats_compatibility
+    score_rows = [
+        ["Job Match Score (overall alignment)", f"{scoring.overall_alignment:.1f}%"],
+        ["Required skill coverage", f"{scoring.required_skill_coverage:.1f}%"],
+        ["Preferred skill coverage", f"{scoring.preferred_skill_coverage:.1f}%"],
+    ]
+    if ats and ats.status == "available" and ats.overall_score is not None:
+        score_rows.insert(1, [ats.label, f"{ats.overall_score:.1f}%"])
     score_table = Table(
-        [
-            ["Overall alignment", f"{scoring.overall_alignment:.1f}%"],
-            ["Required skill coverage", f"{scoring.required_skill_coverage:.1f}%"],
-            ["Preferred skill coverage", f"{scoring.preferred_skill_coverage:.1f}%"],
-        ],
+        score_rows,
         colWidths=[2.8 * inch, 1.5 * inch],
     )
     score_table.setStyle(
@@ -76,7 +80,27 @@ def generate_analysis_pdf(record: StoredAnalysisRecord) -> bytes:
     story.append(score_table)
     story.append(Spacer(1, 0.1 * inch))
     story.append(_p(scoring.disclaimer, small))
+    if ats:
+        story.append(Spacer(1, 0.1 * inch))
+        story.append(_p(ats.disclaimer, small))
     story.append(Spacer(1, 0.2 * inch))
+
+    if ats and ats.status == "available":
+        story.append(_p("Estimated ATS compatibility breakdown", h2))
+        for component in ats.components:
+            if component.available and component.score is not None:
+                story.append(
+                    _p(
+                        f"{component.label}: {component.score:.1f}% "
+                        f"(effective weight {component.effective_weight * 100:.0f}%)",
+                        body,
+                    ),
+                )
+        for signal in ats.positive_signals[:5]:
+            story.append(_p(f"Strength: {signal}", small))
+        for fix in ats.recommended_fixes[:6]:
+            story.append(_p(f"<b>{fix.title}</b> ({fix.impact} impact): {fix.rationale}", body))
+        story.append(Spacer(1, 0.15 * inch))
 
     story.append(_p("Requirement findings", h2))
     for finding in data.analysis.findings[:40]:

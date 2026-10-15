@@ -50,6 +50,7 @@ def list_history(db: Session, session_id: str) -> List[AnalysisHistoryItem]:
                 resume_filename=row.resume_filename,
                 overall_alignment=summary["overall_alignment"],
                 required_skill_coverage=summary["required_skill_coverage"],
+                ats_compatibility_score=summary.get("ats_compatibility_score"),
             ),
         )
     return items
@@ -111,7 +112,10 @@ def _to_stored(row: AnalysisRecord) -> StoredAnalysisRecord:
 def _summary_from_json(result_json: str) -> dict:
     payload = json.loads(result_json)
     scoring = payload.get("analysis", {}).get("scoring", {})
+    ats = payload.get("analysis", {}).get("ats_compatibility") or {}
+    ats_score = ats.get("overall_score")
     return {
         "overall_alignment": float(scoring.get("overall_alignment", 0.0)),
         "required_skill_coverage": float(scoring.get("required_skill_coverage", 0.0)),
+        "ats_compatibility_score": float(ats_score) if ats_score is not None else None,
     }

@@ -81,6 +81,46 @@ class ScoringBreakdown(BaseModel):
     disclaimer: str
 
 
+class ResumeParseContext(BaseModel):
+    """Optional upload metadata to improve ATS parsing-quality estimates."""
+
+    format: Optional[Literal["pdf", "docx"]] = None
+    word_count: Optional[int] = Field(default=None, ge=0)
+    character_count: Optional[int] = Field(default=None, ge=0)
+    page_count: Optional[int] = Field(default=None, ge=0)
+
+
+class ATSComponentScore(BaseModel):
+    id: str
+    label: str
+    nominal_weight: float = Field(..., ge=0.0, le=1.0)
+    effective_weight: float = Field(..., ge=0.0, le=1.0)
+    score: Optional[float] = Field(default=None, ge=0.0, le=100.0)
+    available: bool
+    explanation: str
+
+
+class ATSRecommendedFix(BaseModel):
+    title: str
+    rationale: str
+    impact: Literal["high", "medium", "low"]
+
+
+class ATSCompatibilityResult(BaseModel):
+    status: Literal["available", "unavailable", "insufficient_data"]
+    overall_score: Optional[float] = Field(default=None, ge=0.0, le=100.0)
+    label: str = "Estimated ATS Compatibility"
+    disclaimer: str
+    methodology: str
+    components: List[ATSComponentScore] = Field(default_factory=list)
+    positive_signals: List[str] = Field(default_factory=list)
+    improvement_opportunities: List[str] = Field(default_factory=list)
+    missing_keywords: List[str] = Field(default_factory=list)
+    structural_warnings: List[str] = Field(default_factory=list)
+    parsing_warnings: List[str] = Field(default_factory=list)
+    recommended_fixes: List[ATSRecommendedFix] = Field(default_factory=list)
+
+
 class StructuredRequirements(BaseModel):
     items: List[ExtractedRequirement]
 
@@ -90,6 +130,7 @@ class DeterministicAnalysisResult(BaseModel):
     resume_profile: ResumeProfile
     findings: List[RequirementFinding]
     scoring: ScoringBreakdown
+    ats_compatibility: Optional[ATSCompatibilityResult] = None
 
 
 class LearningPlanStep(BaseModel):
@@ -127,6 +168,7 @@ class AnalysisRequest(BaseModel):
     ai_consent: bool = False
     save_to_history: bool = False
     resume_filename: Optional[str] = Field(default=None, max_length=255)
+    resume_parse_context: Optional[ResumeParseContext] = None
 
 
 class AnalysisData(BaseModel):
@@ -145,6 +187,7 @@ class AnalysisHistoryItem(BaseModel):
     resume_filename: Optional[str] = None
     overall_alignment: float = Field(..., ge=0.0, le=100.0)
     required_skill_coverage: float = Field(..., ge=0.0, le=100.0)
+    ats_compatibility_score: Optional[float] = Field(default=None, ge=0.0, le=100.0)
 
 
 class StoredAnalysisRecord(BaseModel):

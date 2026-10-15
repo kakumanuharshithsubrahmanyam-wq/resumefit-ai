@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { FindingsPanel } from '@/components/analysis/FindingsPanel'
 import { ProfileAlignment } from '@/components/analysis/ProfileAlignment'
 import { RecommendationsPanel } from '@/components/analysis/RecommendationsPanel'
+import { AtsCompatibilityPanel } from '@/components/analysis/AtsCompatibilityPanel'
 import { ScoreOverview } from '@/components/analysis/ScoreOverview'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
@@ -163,11 +164,16 @@ export function ResultsDashboard({
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <Target className="size-4" />
-                Match score overview
+                Job Match & ATS scores
               </CardTitle>
+              <CardDescription>
+                Job Match measures evidence alignment; Estimated ATS Compatibility reflects
+                parse-friendly structure and keyword communication in extracted text.
+              </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-6">
               <ScoreOverview scoring={scoring} />
+              <AtsCompatibilityPanel ats={analysisResult.analysis.ats_compatibility} />
             </CardContent>
           </Card>
 

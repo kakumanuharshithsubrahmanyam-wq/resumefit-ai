@@ -42,6 +42,9 @@ def test_analysis_endpoint_success_without_ai() -> None:
     body = response.json()
     assert body["success"] is True
     assert body["data"]["analysis"]["scoring"]["overall_alignment"] >= 0
+    ats = body["data"]["analysis"]["ats_compatibility"]
+    assert ats["status"] == "available"
+    assert ats["overall_score"] is not None
     assert body["data"]["recommendations"]["provider"] == "disabled"
 
 
@@ -72,7 +75,7 @@ def test_ai_consent_required_when_requesting_ai() -> None:
     assert response.json()["error"]["code"] == "ai_consent_required"
 
 
-@patch("app.services.recommendation_service.OpenAIRecommendationProvider.generate_recommendations")
+@patch("app.services.ai.openai_provider.OpenAIRecommendationProvider.generate_recommendations")
 def test_ai_failure_falls_back_deterministically(mock_generate) -> None:
     mock_generate.side_effect = RuntimeError("rate limit")
 

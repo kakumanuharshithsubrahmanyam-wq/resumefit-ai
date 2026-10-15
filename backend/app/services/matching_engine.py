@@ -12,10 +12,12 @@ from app.schemas.analysis import (
     RequirementCategory,
     RequirementFinding,
     RequirementImportance,
+    ResumeParseContext,
     ResumeProfile,
     ScoringBreakdown,
     StructuredRequirements,
 )
+from app.services.ats_compatibility_engine import compute_ats_compatibility
 from app.services.requirement_extractor import extract_requirements
 from app.services.resume_analyzer import analyze_resume
 from app.services.text_utils import find_skill_mentions, split_sentences
@@ -216,13 +218,21 @@ def match_requirements(
 def run_deterministic_analysis(
     resume_text: str,
     job_description: str,
+    *,
+    parse_context: Optional[ResumeParseContext] = None,
 ) -> DeterministicAnalysisResult:
     requirements = extract_requirements(job_description)
     profile = analyze_resume(resume_text)
     findings, scoring = match_requirements(requirements, resume_text, profile)
-    return DeterministicAnalysisResult(
+    base = DeterministicAnalysisResult(
         requirements=requirements,
         resume_profile=profile,
         findings=findings,
         scoring=scoring,
     )
+    ats = compute_ats_compatibility(
+        resume_text=resume_text,
+        analysis=base,
+        parse_context=parse_context,
+    )
+    return base.model_copy(update={"ats_compatibility": ats})

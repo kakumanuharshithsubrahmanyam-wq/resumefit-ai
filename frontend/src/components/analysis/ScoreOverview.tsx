@@ -23,14 +23,14 @@ export function ScoreOverview({ scoring }: ScoreOverviewProps) {
   return (
     <div className="space-y-4">
       <div className="grid gap-3 sm:grid-cols-3">
-        <ScoreCard label="Overall alignment" value={scoring.overall_alignment} />
+        <ScoreCard label="Job Match Score" value={scoring.overall_alignment} />
         <ScoreCard label="Required coverage" value={scoring.required_skill_coverage} />
         <ScoreCard label="Preferred coverage" value={scoring.preferred_skill_coverage} />
       </div>
 
       <Alert>
         <Target className="size-4" aria-hidden="true" />
-        <AlertTitle>What this score means</AlertTitle>
+        <AlertTitle>What the Job Match Score means</AlertTitle>
         <AlertDescription className="space-y-2">
           <p>{scoring.disclaimer}</p>
           <p className="text-xs text-muted-foreground">{scoring.methodology}</p>

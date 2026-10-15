@@ -6,7 +6,7 @@ from app.schemas.analysis import AIRecommendations, DeterministicAnalysisResult
 from app.services.ai.fallback_recommendations import build_fallback_recommendations
 from fastapi import status
 
-from app.services.ai.openai_provider import OpenAIRecommendationProvider
+from app.services.ai.openai_provider import create_openai_provider
 
 
 def build_recommendations(
@@ -30,15 +30,10 @@ def build_recommendations(
             message="AI recommendations require explicit consent before sending resume content to a provider.",
         )
 
-    if not settings.ai_enabled or not settings.openai_api_key:
+    provider = create_openai_provider(settings)
+    if provider is None:
         return build_fallback_recommendations(analysis)
 
-    provider = OpenAIRecommendationProvider(
-        api_key=settings.openai_api_key,
-        model=settings.openai_model,
-        timeout_seconds=settings.ai_timeout_seconds,
-        max_input_chars=settings.ai_max_input_chars,
-    )
     try:
         return provider.generate_recommendations(
             job_title=job_title,

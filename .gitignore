@@ -28,6 +28,8 @@ frontend/.vite/
 .env
 .env.local
 .env.*.local
+backend/.env
+frontend/.env
 
 # Database
 *.db
