@@ -19,8 +19,6 @@ services:
       - key: AI_ENABLED
         value: "false"
       - key: CORS_ORIGINS
-        sync: false
-    disk:
-      name: resumefit-data
-      mountPath: /app/data
-      sizeGB: 1
+        value: https://frontend-liard-theta-0j80a7aaw6.vercel.app
+    # Free web services cannot attach persistent disks; SQLite under /app/data is ephemeral
+    # (lost on redeploy/restart/spin-down). Upgrade to a paid instance + disk for file persistence.
