@@ -1,0 +1,26 @@
+# Render Blueprint — connect this repo in the Render Dashboard (Blueprint → New).
+services:
+  - type: web
+    name: resumefit-ai-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DATABASE_URL
+        value: sqlite:////app/data/resumefit.db
+      - key: MAX_UPLOAD_BYTES
+        value: "5242880"
+      - key: RATE_LIMIT_REQUESTS_PER_MINUTE
+        value: "120"
+      - key: AI_ENABLED
+        value: "false"
+      - key: CORS_ORIGINS
+        sync: false
+    disk:
+      name: resumefit-data
+      mountPath: /app/data
+      sizeGB: 1

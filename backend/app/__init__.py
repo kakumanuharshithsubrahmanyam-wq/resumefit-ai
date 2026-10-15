@@ -1,0 +1,1 @@
+"""ResumeFit AI backend application."""
